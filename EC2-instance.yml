@@ -1,0 +1,51 @@
+# Installation of boto3 python library
+
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+  - cred.yml
+  tasks:
+  - name:
+    pip:
+      name: boto3
+      state: present
+
+# Security Group
+  - name: Creating Security Group for WebServer on AWS
+    ec2_group:
+      name: WebSG
+      description: Security Group for the EC2 Web Server
+      region: ap-south-1
+      aws_access_key: "AKIA3D7S5LQ4S3NVJP3E"
+      aws_secret_key: "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"
+      rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+# Creating the EC2 instance
+  - name: launching ec2 instance for webserver
+    ec2:
+      key_name: webkey
+      instance_type: t2.micro
+      image: ami-0e306788ff2473ccb
+      wait: true
+      group: WebSG
+      count: 1
+      vpc_subnet_id: subnet-6dfdc705
+      assign_public_ip: yes
+      region: ap-south-1
+      state: present
+      aws_access_key: "AKIA3D7S5LQ4S3NVJP3E"
+      aws_secret_key: "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"
+      instance_tags:
+        Name: webserver
+    register: ec2
