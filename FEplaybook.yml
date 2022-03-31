@@ -1,0 +1,46 @@
+---
+- hosts: all
+  become: yes
+  
+  tasks:
+    - name: update package repo
+      package: sudo apt update
+
+    - name: install nginx
+      package: sudo apt install nginx -y
+
+    - name: install curl
+      package: sudo apt-get install curl
+    
+    - name: download node source
+      package: curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    
+    - name: install nodejs
+      package: sudo apt-get install -y nodejs
+
+    - name: clone repo 
+      package: 
+        repo: https://github.com/kayzee1386/Mobalysis.git
+        dest: /var/www/html
+
+
+    - name: install node modules
+      package: sudo npm install
+      args: 
+        chdir: /var/www/html/Mobalysis/frontend
+
+    - name: run build
+      package: sudo npm run build
+      args: 
+        chdir: /var/www/html/Mobalysis/frontend
+
+    - name: copy contents to build directory
+      package: sudo cp -r /var/www/html/Mobalysis/frontend/build/* /var/www/html
+
+    - name: remove nginx default index file
+      package: sudo rm -rf index.nginx.debian.html
+      args: 
+        chdir: /var/www/html
+
+    - name: restart nginx
+      package: sudo systemctl restart nginx
